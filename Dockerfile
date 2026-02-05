@@ -1,45 +1,49 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
-LABEL maintainer="<hearis71@gmail.com>"
+LABEL maintainer="hearis71"
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
 
-# ===============================
-# Base packages
-# ===============================
+# === Base system ===
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common \
-    curl \
     ca-certificates \
-    gnupg \
+    curl \
     sudo \
-    vim-tiny \
-    net-tools \
     supervisor \
-    openssh-server \
-    pwgen \
     nginx \
-    dbus-x11 \
-    x11-utils \
-    xvfb \
-    x11vnc \
-    lxde \
-    libreoffice \
-    firefox \
-    vlc \
-    ffmpeg \
-    mesa-utils \
-    libgl1-mesa-dri \
-    fonts-wqy-microhei \
-    language-pack-zh-hant \
-    language-pack-gnome-zh-hant \
-    firefox-locale-zh-hant \
-    libreoffice-l10n-zh-tw \
-    arc-theme \
-    pinta \
+    openssh-server \
+    net-tools \
+    vim-tiny \
     python3 \
     python3-pip \
     python3-dev \
     build-essential \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+    xvfb \
+    x11vnc \
+    dbus-x11 \
+    x11-utils \
+    fonts-wqy-microhei \
+    language-pack-zh-hant \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# === Tini (init process) ===
+ENV TINI_VERSION=v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
+RUN chmod +x /bin/tini
+
+# === App files ===
+ADD image/ /
+RUN chmod +x /startup.sh
+
+# === Python deps ===
+RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip3 install --no-cache-dir -r /usr/lib/web/requirements.txt
+
+# === Runtime ===
+EXPOSE 80
+WORKDIR /root
+
+ENTRYPOINT ["/bin/tini", "--"]
+CMD ["/startup.sh"]
