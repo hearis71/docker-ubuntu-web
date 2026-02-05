@@ -1,4 +1,4 @@
-name: Build & Push Docker Image
+name: Build & Push Docker Image (Stable Ubuntu)
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     permissions:
       contents: read
