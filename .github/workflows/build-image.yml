@@ -1,0 +1,28 @@
+name: Build Ubuntu Image
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - Dockerfile
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t ghcr.io/hearis71/pdf-encryptor/libreoffice:latest .
+
+      - name: Push Docker image
+        run: docker push ghcr.io/hearis71/pdf-encryptor/libreoffice:latest
